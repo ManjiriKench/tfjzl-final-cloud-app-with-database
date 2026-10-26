@@ -93,21 +93,24 @@ class Enrollment(models.Model):
     mode = models.CharField(max_length=5, choices=COURSE_MODES, default=AUDIT)
     rating = models.FloatField(default=5.0)
 
+    def __str__(self):
+        return "User: " + self.user.username + ", Course: " + self.course.name
+
 
 # Question model
 class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     lessons = models.ManyToManyField(Lesson)
     question_text = models.CharField(max_length=500)
-    question_point = models.IntegerField(default=1)
+    grade = models.IntegerField(default=1)
 
     @property
-    def grade(self):
-        return self.question_point
+    def question_point(self):
+        return self.grade
 
-    @grade.setter
-    def grade(self, value):
-        self.question_point = value
+    @question_point.setter
+    def question_point(self, value):
+        self.grade = value
 
     def __str__(self):
         return "Question: " + self.question_text
@@ -150,4 +153,4 @@ class Submission(models.Model):
     choices = models.ManyToManyField(Choice)
 
     def __str__(self):
-        return "Submission ID: " + str(self.id)
+        return "Enrollment: " + str(self.enrollment)

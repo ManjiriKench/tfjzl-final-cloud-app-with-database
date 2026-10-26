@@ -135,21 +135,24 @@ def show_exam_result(request, course_id, submission_id):
     selected_choices = submission.choices.all()
     questions = course.question_set.all()
 
-    # calculate maximum points 
-    max_points = sum([q.question_point for q in questions])
+    # calculate maximum possible points 
+    possible = sum([q.grade for q in questions])
     student_score = 0
     # calculate the points achieved by the student
     for question in questions:
         if question.is_get_score(selected_choices):
-            student_score += question.question_point
+            student_score += question.grade
 
     # calculate the grade percentage safely
-    if max_points > 0:
-        grade = int(student_score / max_points * 100)
+    if possible > 0:
+        grade = int(student_score / possible * 100)
     else:
         grade = 100
     
     context['grade'] = grade
+    context['possible'] = possible
+    context['possible_score'] = possible
+    context['score'] = student_score
     context['selected_ids'] = selected_choices
     context['course'] = course
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)

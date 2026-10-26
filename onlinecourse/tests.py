@@ -39,6 +39,12 @@ class ExamFlowTestCase(TestCase):
         self.assertIn('Is Django a Python framework?', str(self.q1))
         self.assertEqual(str(self.c1_1), 'Yes')
 
+        # Test Enrollment and Submission string representations
+        enrollment = Enrollment.objects.create(user=self.user, course=self.course)
+        submission = Submission.objects.create(enrollment=enrollment)
+        self.assertIn('Enrollment', str(submission))
+        self.assertIn('learner1', str(submission))
+
     def test_is_get_score_logic(self):
         # Exact match
         self.assertTrue(self.q1.is_get_score([self.c1_1.id]))
@@ -65,6 +71,8 @@ class ExamFlowTestCase(TestCase):
         response = self.client.post(submit_url, post_data, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['grade'], 100)
+        self.assertEqual(response.context['possible'], 100)
+        self.assertEqual(response.context['score'], 100)
         self.assertContains(response, 'Congratulations')
         self.assertContains(response, '100/100')
 
