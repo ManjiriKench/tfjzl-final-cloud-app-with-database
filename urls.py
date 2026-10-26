@@ -6,7 +6,6 @@ from . import views
 
 app_name = 'onlinecourse'
 urlpatterns = [
-    
     path('admin/', admin.site.urls),
     path(route='', view=views.CourseListView.as_view(), name='index'),
     path('registration/', views.registration_request, name='registration'),
@@ -16,9 +15,9 @@ urlpatterns = [
     path('<int:pk>/', views.CourseDetailView.as_view(), name='course_details'),
     # ex: /enroll/5/
     path('<int:course_id>/enroll/', views.enroll, name='enroll'),
+    # Route for submit view
     path('<int:course_id>/submit/', views.submit, name='submit'),
-    path('course/<int:course_id>/submission/<int:submission_id>/result/', views.show_exam_result, name='show_exam_result'),
+    # Route for show_exam_result view
+    path('<int:course_id>/submission/<int:submission_id>/show_exam_result/', views.show_exam_result, name='show_exam_result'),
 
-    # <HINT> Create a route for show_exam_result view
-
- ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
