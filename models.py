@@ -48,13 +48,11 @@ class Learner(models.Model):
     social_link = models.URLField(max_length=200)
 
     def __str__(self):
-        return self.user.username + "," + \
-               self.occupation
+        return self.user.username + "," + self.occupation
 
 
 # Course model
 class Course(models.Model):
-
     name = models.CharField(null=False, max_length=30, default='online course')
     image = models.ImageField(upload_to='course_images/')
     description = models.CharField(max_length=1000)
@@ -65,8 +63,7 @@ class Course(models.Model):
     is_enrolled = models.BooleanField(default=False)
 
     def __str__(self):
-        return "Name: " + self.name + "," + \
-               "Description: " + self.description
+        return "Name: " + self.name + "," + "Description: " + self.description
 
 
 # Lesson model
@@ -75,6 +72,9 @@ class Lesson(models.Model):
     order = models.IntegerField(default=0)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     content = models.TextField()
+
+    def __str__(self):
+        return self.title
 
 
 # Enrollment model
@@ -94,30 +94,37 @@ class Enrollment(models.Model):
     rating = models.FloatField(default=5.0)
 
 
+# Question model
 class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    # Establishing a many-to-many relationship as a question can belong to one or more lessons and a lesson can have many questions
-    lessons =  models.ManyToManyField(Lesson)
+    lessons = models.ManyToManyField(Lesson)
     question_text = models.CharField(max_length=500)
-    question_point = models.IntegerField(default=1)
+    grade = models.IntegerField(default=1)  # Required field name for grading calculations
+
+    def __str__(self):
+        return "Question: " + self.question_text
 
     def is_get_grade(self, selected_ids):
-        """ this function checks if the student successfully chose all the right answers """
-        all_answers = self.choice_set.filter(is_correct=True).count()
-        selected_correct = self.choice_set.filter(is_correct=True, id__in=selected_ids).count()
-        if all_answers == selected_correct:
-            return True
-        else:
-            return False
+        """Checks if the student selected all correct choices and no wrong ones."""
+        all_correct_ids = set(self.choice_set.filter(is_correct=True).values_list('id', flat=True))
+        selected_ids_set = set(selected_ids)
+        return all_correct_ids == selected_ids_set
 
+
+# Choice model
 class Choice(models.Model):
-    # Has a one-to-many relationship with Question model
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.choice_text
+
+
+# Submission model
 class Submission(models.Model):
-   # One enrollment can have multiple submissions
-   enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-   # A submission can have multiple choices and a choice can belong to multiple submissions
-   choices = models.ManyToManyField(Choice)
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    choices = models.ManyToManyField(Choice)
+
+    def __str__(self):
+        return "Submission ID: " + str(self.id)
