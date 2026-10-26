@@ -99,16 +99,39 @@ class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     lessons = models.ManyToManyField(Lesson)
     question_text = models.CharField(max_length=500)
-    grade = models.IntegerField(default=1)  # Required field name for grading calculations
+    question_point = models.IntegerField(default=1)
+
+    @property
+    def grade(self):
+        return self.question_point
+
+    @grade.setter
+    def grade(self, value):
+        self.question_point = value
 
     def __str__(self):
         return "Question: " + self.question_text
 
+    def is_get_score(self, selected_ids):
+        """Checks if the student selected all correct choices and no wrong ones for this question."""
+        # Normalize selected_ids to list of integers if objects are passed
+        normalized_ids = []
+        for item in selected_ids:
+            if hasattr(item, 'id'):
+                normalized_ids.append(item.id)
+            elif isinstance(item, int):
+                normalized_ids.append(item)
+            elif isinstance(item, str) and item.isdigit():
+                normalized_ids.append(int(item))
+
+        all_answers = self.choice_set.filter(is_correct=True).count()
+        selected_correct = self.choice_set.filter(is_correct=True, id__in=normalized_ids).count()
+        selected_wrong = self.choice_set.filter(is_correct=False, id__in=normalized_ids).count()
+        return all_answers == selected_correct and selected_wrong == 0
+
     def is_get_grade(self, selected_ids):
-        """Checks if the student selected all correct choices and no wrong ones."""
-        all_correct_ids = set(self.choice_set.filter(is_correct=True).values_list('id', flat=True))
-        selected_ids_set = set(selected_ids)
-        return all_correct_ids == selected_ids_set
+        """Alias for is_get_score for backward compatibility."""
+        return self.is_get_score(selected_ids)
 
 
 # Choice model
